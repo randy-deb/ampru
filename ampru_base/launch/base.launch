@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="ampru_node" pkg="ampru_base" type="ampru_node"/>
+</launch>
