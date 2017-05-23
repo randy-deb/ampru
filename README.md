@@ -15,4 +15,4 @@ The robot description files are based on the diff_wheel_robot from the book [Mas
 
 ### ampru_robot
 - ampru_bringup
-- ampru_hardware
+- ampru_base
