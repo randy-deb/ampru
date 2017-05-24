@@ -29,7 +29,7 @@ void ampru_base::AmpruHardware::registerControlInterface()
 
 void ampru_base::AmpruHardware::updateJointsFromHardware()
 {
-    
+    //TODO: Update joint states
 }
 
 void ampru_base::AmpruHardware::writeCommandsToHardware()
