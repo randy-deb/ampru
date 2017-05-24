@@ -10,23 +10,30 @@ find_package(
   roslint
   controller_manager
   hardware_interface
+  rosserial_arduino
+  rosserial_client
 )
-find_package(
-  Boost
-  REQUIRED
-  COMPONENTS
-  chrono
+
+rosserial_generate_ros_lib(
+  PACKAGE rosserial_arduino
+  SCRIPT make_libraries.py
 )
+
+rosserial_configure_client(
+  DIRECTORY firmware
+  TOOLCHAIN_FILE ${ROSSERIAL_ARDUINO_TOOLCHAIN}
+)
+
+rosserial_add_client_target(firmware ampru_wheel_base ALL)
+rosserial_add_client_target(firmware ampru_wheel_base-upload)
 
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp hardware_interface
-  DEPENDS Boost
 )
 
 include_directories(
   include
-  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 

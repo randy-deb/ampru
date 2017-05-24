@@ -5,13 +5,20 @@ find_package(
   catkin
   REQUIRED
   COMPONENTS
+  roscpp
+  rospy
   std_msgs
   message_generation
 )
 
 add_message_files(
   FILES
-  ampru_wheel_control.msg
+  WheelControl.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 catkin_package(

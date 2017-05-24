@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -rf ~/sketchbook/libraries/rob_lib
-rosrun rosserial_client make_libraries ~/sketchbook/libraries ampru_msg
+rm -rf ~/sketchbook/libraries/ros_lib
+rosrun rosserial_client make_libraries ~/sketchbook/libraries
