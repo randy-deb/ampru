@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="teleop" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen">
+        <remap from="cmd_vel" to="ampru_velocity_controller/cmd_vel"/>
+    </node>
+</launch>

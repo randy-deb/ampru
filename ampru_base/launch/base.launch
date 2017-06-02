@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-  <node name="ampru_node" pkg="ampru_base" type="ampru_node"/>
+    <node pkg="rosserial_python" type="serial_node.py" name="serial_node" respawn="true">
+        <param name="port" value="/dev/ttyUSB0"/>
+    </node>
+    <node name="ampru_node" pkg="ampru_base" type="ampru_node" output="screen"/>
+    <include file="$(find ampru_control)/launch/control.launch"/>
 </launch>

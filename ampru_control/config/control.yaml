@@ -1,0 +1,11 @@
+ampru_joint_publisher:
+    type: "joint_state_controller/JointStateController"
+    publish_rate: 50
+
+ampru_velocity_controller:
+    type: "diff_drive_controller/DiffDriveController"
+    publish_rate: 50
+    left_wheel: 'front_left_wheel_joint'
+    right_wheel: 'front_right_wheel_joint'
+    pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
+    twist_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]

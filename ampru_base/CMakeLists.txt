@@ -12,6 +12,7 @@ find_package(
   hardware_interface
   rosserial_arduino
   rosserial_client
+  ampru_msgs
 )
 
 rosserial_generate_ros_lib(
@@ -29,7 +30,10 @@ rosserial_add_client_target(firmware ampru_wheel_base-upload)
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp hardware_interface
+  CATKIN_DEPENDS
+  roscpp
+  hardware_interface
+  ampru_msgs
 )
 
 include_directories(
@@ -51,7 +55,11 @@ add_executable(
 target_link_libraries(
   ampru_node
   ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
+)
+
+add_dependencies(
+  ampru_node
+  ampru_msgs_generate_messages_cpp
 )
 
 roslint_cpp(

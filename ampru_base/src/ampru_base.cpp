@@ -34,6 +34,7 @@ int main(int argc, char** argv)
 
     std::chrono::system_clock::time_point last_time = std::chrono::system_clock::now();
     ros::TimerOptions control_timer(ros::Duration(1 / control_frequency), std::bind(controlLoop, std::ref(hw), std::ref(cm), std::ref(last_time)), &ampru_queue);
+    ros::Timer control_loop = nh.createTimer(control_timer);
 
     ampru_spinner.start();
     ros::spin();

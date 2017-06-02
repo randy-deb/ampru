@@ -1,3 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+    <include file="$(find ampru_description)/launch/description.launch"/>
+
+    <rosparam command="load" file="$(find ampru_control)/config/control.yaml"/>
+
+    <node name="base_controller_spawner" pkg="controller_manager" type="spawner" args="ampru_joint_publisher ampru_velocity_controller --shutdown-timeout 3"/>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 </launch>
