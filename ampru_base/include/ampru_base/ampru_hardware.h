@@ -3,10 +3,10 @@
 #define ___AMPRU_BASE_AMPRU_HARDWARE_H___
 
 #include <ros/ros.h>
-#include <sensor_msgs/Range.h>
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
+#include "ampru_base/serial_port.h"
 
 namespace ampru_base
 {
@@ -14,20 +14,23 @@ namespace ampru_base
     {
     public:
         AmpruHardware(ros::NodeHandle &nh, ros::NodeHandle &private_nh);
+        ~AmpruHardware();
+
         void registerControlInterface();
         void updateJointsFromHardware();
         void writeCommandsToHardware();
         
     private:
-        void rangeDataCallback(const sensor_msgs::Range::ConstPtr& msg);
+        bool openSerial();
+        void closeSerial();
         void limitDifferentialSpeed(double &diff_speed_left, double &diff_speed_right);
         double angularToLinear(const double &angle) const;
 
     private:
         ros::NodeHandle _nh;
         ros::NodeHandle _private_nh;
-        ros::Publisher _wheel_control_publisher;
-        ros::Subscriber _range_data_subscriber;
+        serial::Serial _serial;
+	ampru_base::SerialPort _serialPort;
         hardware_interface::JointStateInterface _joint_state_interface;
         hardware_interface::VelocityJointInterface _velocity_joint_interface;
         double _wheel_diameter;

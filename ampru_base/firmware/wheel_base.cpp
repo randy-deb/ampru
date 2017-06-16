@@ -1,119 +1,151 @@
-#include <ros.h>
+
+//-------------------------------------------------------------------
+// Included header files
+//-------------------------------------------------------------------
 #include <Arduino.h>
-#include <NewPing.h>
-#include <sensor_msgs/Range.h>
-#include <ampru_msgs/WheelControl.h>
+#include "SerialHDLC.h"
 
-ros::NodeHandle nh;
-
-#define LWHEEL_PWR_PIN 10	// left wheel power (0-255)
+//-------------------------------------------------------------------
+// Defines
+//-------------------------------------------------------------------
+#define LWHEEL_ENC_PIN 2	// left wheel encoder
+#define LWHEEL_PWR_PIN 6	// left wheel power (0-255)
 #define LWHEEL_FWD_PIN 4	// left wheel forward enabled
 #define LWHEEL_BWD_PIN 5	// left wheel backward enabled
-#define RWHEEL_PWR_PIN 11	// right wheel power (0-255)
-#define RWHEEL_FWD_PIN 6	// right wheel forward enabled
-#define RWHEEL_BWD_PIN 7	// right wheel backward enabled
+#define RWHEEL_ENC_PIN 3	// right wheel encoder
+#define RWHEEL_PWR_PIN 9	// right wheel power (0-255)
+#define RWHEEL_FWD_PIN 7	// right wheel forward enabled
+#define RWHEEL_BWD_PIN 8	// right wheel backward enabled
 
-#define PING_TRIG_PIN 2
-#define PING_ECHO_PIN 3
-#define PING_MAX_DIST 200
+//-------------------------------------------------------------------
+// Forward method declarations
+//-------------------------------------------------------------------
+void onHandleFrame(const uint8_t* frameBuffer, uint16_t frameLength);
+void setMotorControl(const uint8_t* frameBuffer, uint16_t frameLength);
+void getMotorEncoder(const uint8_t* frameBuffer, uint16_t frameLength);
+uint8_t getMotorEncoderResponse[6] = { 0x02, 0x70, 0x00, 0x02, 0x00, 0x00 };
 
-NewPing sonar(PING_TRIG_PIN, PING_ECHO_PIN, PING_MAX_DIST);
-unsigned int pingSpeed = 250;
-unsigned long pingTimer;
+//-------------------------------------------------------------------
+// Globals
+//-------------------------------------------------------------------
+SerialHDLC hdlc(onHandleFrame, 32);
+volatile uint8_t lwheel_pulses = 0;
+volatile uint8_t rwheel_pulses = 0;
 
-char range_frameid[] = "/us_ranger";
-sensor_msgs::Range range_msg;
-ros::Publisher rangeDataPublisher("range_data", &range_msg);
-
-void wheelControlCallback(const ampru_msgs::WheelControl& wheel_control_msg)
+void onHandleFrame(const uint8_t* frameBuffer, uint16_t frameLength)
 {
-	// Control the left wheel
-	if (wheel_control_msg.left_wheel_speed > 0)
+	if (frameLength >= 2)
 	{
-		digitalWrite(LWHEEL_FWD_PIN, HIGH);
-		digitalWrite(LWHEEL_BWD_PIN, LOW);
-		analogWrite(LWHEEL_PWR_PIN, (int)(wheel_control_msg.left_wheel_speed * 255));
-	}
-	else if (wheel_control_msg.left_wheel_speed < 0)
-	{
-		digitalWrite(LWHEEL_FWD_PIN, LOW);
-		digitalWrite(LWHEEL_BWD_PIN, HIGH);
-		analogWrite(LWHEEL_PWR_PIN, (int)(-wheel_control_msg.left_wheel_speed * 255));
-	}
-	else
-	{
-		analogWrite(LWHEEL_PWR_PIN, 0);
-		digitalWrite(LWHEEL_FWD_PIN, LOW);
-		digitalWrite(LWHEEL_BWD_PIN, LOW);
-	}
-
-	// Control the right wheel
-	if (wheel_control_msg.right_wheel_speed > 0)
-	{
-		digitalWrite(RWHEEL_FWD_PIN, HIGH);
-		digitalWrite(RWHEEL_BWD_PIN, LOW);
-		analogWrite(RWHEEL_PWR_PIN, (int)(wheel_control_msg.right_wheel_speed * 255));
-	}
-	else if (wheel_control_msg.right_wheel_speed < 0)
-	{
-		digitalWrite(RWHEEL_FWD_PIN, LOW);
-		digitalWrite(RWHEEL_BWD_PIN, HIGH);
-		analogWrite(RWHEEL_PWR_PIN, (int)(-wheel_control_msg.right_wheel_speed * 255));
-	}
-	else
-	{
-		analogWrite(RWHEEL_PWR_PIN, 0);
-		digitalWrite(RWHEEL_FWD_PIN, LOW);
-		digitalWrite(RWHEEL_BWD_PIN, LOW);
+		uint16_t cmd = (((uint16_t)frameBuffer[0]) | (((uint16_t)frameBuffer[1]) << 8));
+		uint16_t len = (((uint16_t)frameBuffer[2]) | (((uint16_t)frameBuffer[3]) << 8));
+		switch (cmd)
+		{
+			case 0x0001:
+				setMotorControl(&frameBuffer[4], len);
+				break;
+			case 0x0002:
+				getMotorEncoder(&frameBuffer[4], len);
+				break;
+			case 0x00AA:
+				hdlc.write(frameBuffer, frameLength);
+				break;
+		}
 	}
 }
 
-void echoCheck()
+void setMotorControl(const uint8_t* frameBuffer, uint16_t frameLength)
 {
-  if (sonar.check_timer())
-  {
-	  range_msg.range = sonar.ping_result / US_ROUNDTRIP_CM;
-	  range_msg.header.stamp = nh.now();
-	  rangeDataPublisher.publish(&range_msg);
-  }
+	if (frameLength == 4)
+	{
+		uint8_t lmotorDir = frameBuffer[0];
+		uint8_t lmotorPwr = frameBuffer[1];
+		uint8_t rmotorDir = frameBuffer[2];
+		uint8_t rmotorPwr = frameBuffer[3];
+
+		if (lmotorDir == 0)
+		{
+			analogWrite(LWHEEL_PWR_PIN, 0);
+			digitalWrite(LWHEEL_FWD_PIN, LOW);
+			digitalWrite(LWHEEL_BWD_PIN, LOW);
+		}
+		else if (lmotorDir == 1)
+		{
+			digitalWrite(LWHEEL_FWD_PIN, HIGH);
+			digitalWrite(LWHEEL_BWD_PIN, LOW);
+			analogWrite(LWHEEL_PWR_PIN, lmotorPwr);
+		}
+		else if (lmotorDir == 2)
+		{
+			digitalWrite(LWHEEL_FWD_PIN, LOW);
+			digitalWrite(LWHEEL_BWD_PIN, HIGH);
+			analogWrite(LWHEEL_PWR_PIN, lmotorPwr);
+		}
+
+		if (rmotorDir == 0)
+		{
+			analogWrite(RWHEEL_PWR_PIN, 0);
+			digitalWrite(RWHEEL_FWD_PIN, LOW);
+			digitalWrite(RWHEEL_BWD_PIN, LOW);
+		}
+		else if (rmotorDir == 1)
+		{
+			digitalWrite(RWHEEL_FWD_PIN, HIGH);
+			digitalWrite(RWHEEL_BWD_PIN, LOW);
+			analogWrite(RWHEEL_PWR_PIN, rmotorPwr);
+		}
+		else if (rmotorDir == 2)
+		{
+			digitalWrite(RWHEEL_FWD_PIN, LOW);
+			digitalWrite(RWHEEL_BWD_PIN, HIGH);
+			analogWrite(RWHEEL_PWR_PIN, rmotorPwr);
+		}
+	}
 }
 
-ros::Subscriber<ampru_msgs::WheelControl> wheelControlSubscriber("wheel_control", &wheelControlCallback);
+void getMotorEncoder(const uint8_t* frameBuffer, uint16_t frameLength)
+{
+	const uint8_t last_lwheel_pulses = lwheel_pulses;
+	const uint8_t last_rwheel_pulses = rwheel_pulses;
+	lwheel_pulses -= last_lwheel_pulses;
+	rwheel_pulses -= last_rwheel_pulses;
+	getMotorEncoderResponse[4] = last_lwheel_pulses;
+	getMotorEncoderResponse[5] = last_rwheel_pulses;
+	hdlc.write(getMotorEncoderResponse, 6);
+}
+
+void lwheelEncoderPulse()
+{
+	lwheel_pulses++;
+}
+
+void rwheelEncoderPulse()
+{
+	rwheel_pulses++;
+}
 
 void setup()
 {
-	// Setup the wheel pins
+	// Setup the wheel motor/encoder pins
+	pinMode(LWHEEL_ENC_PIN, INPUT);
 	pinMode(LWHEEL_PWR_PIN, OUTPUT);
 	pinMode(LWHEEL_FWD_PIN, OUTPUT);
 	pinMode(LWHEEL_BWD_PIN, OUTPUT);
+	pinMode(RWHEEL_ENC_PIN, INPUT);
 	pinMode(RWHEEL_PWR_PIN, OUTPUT);
 	pinMode(RWHEEL_FWD_PIN, OUTPUT);
 	pinMode(RWHEEL_BWD_PIN, OUTPUT);
+	
+	// Setup the wheel encoder interrupts
+	attachInterrupt(0, lwheelEncoderPulse, FALLING);
+	attachInterrupt(1, rwheelEncoderPulse, FALLING);
 
-	// Setup the ping timer
-	pingTimer = millis();
-
-	// Setup the ROS node
-	nh.initNode();
-	nh.getHardware()->setBaud(57600);
-	nh.subscribe(wheelControlSubscriber);
-	nh.advertise(rangeDataPublisher);
-	range_msg.radiation_type = sensor_msgs::Range::ULTRASOUND;
-	range_msg.header.frame_id = range_frameid;
-	range_msg.field_of_view = 0.01;
-	range_msg.min_range = 0.0;
-	range_msg.max_range = 0.5;
+	Serial.begin(9600);
+	while (!Serial); // wait for Leonardo enumeration, others continue immediately
 }
 
 void loop()
 {
-	if (millis() >= pingTimer)
-	{
-		pingTimer += pingSpeed;
-		sonar.ping_timer(echoCheck);
-	}
-
-	nh.spinOnce();
-	delay(10);
+	// Read incomming messages
+	hdlc.read();
 }
 

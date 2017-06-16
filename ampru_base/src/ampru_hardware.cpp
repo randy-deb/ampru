@@ -9,10 +9,13 @@ ampru_base::AmpruHardware::AmpruHardware(ros::NodeHandle &nh, ros::NodeHandle &p
     _private_nh.param<double>("wheel_diameter", _wheel_diameter, 0.35);
     _private_nh.param<double>("max_speed", _max_speed, 1.0);
 
-    _wheel_control_publisher = _nh.advertise<ampru_msgs::WheelControl>("wheel_control", 10);
-    _range_data_subscriber = _nh.subscribe("range_data", 10, &AmpruHardware::rangeDataCallback, this);
-
+    openSerial();
     registerControlInterface();
+}
+
+ampru_base::AmpruHardware::~AmpruHardware()
+{
+    closeSerial();
 }
 
 void ampru_base::AmpruHardware::registerControlInterface()
@@ -33,7 +36,18 @@ void ampru_base::AmpruHardware::registerControlInterface()
 
 void ampru_base::AmpruHardware::updateJointsFromHardware()
 {
-    //TODO: Update joint states
+	ampru_base::GetWheelEncoder getWheelEncoder;
+	_serialPort.sendMessage(&getWheelEncoder);
+
+	auto wheelEncoderData = (WheelEncoderData*)_serialPort.waitMessage(WheelEncoderData::MESSAGE_TYPE, 1.0);
+	if (wheelEncoderData != NULL)
+	{
+		ROS_INFO_STREAM("Wheel encoder: { " << wheelEncoderData->getLeftPulses() << ", " << wheelEncoderData->getRightPulses() << " }");
+	}
+	else
+	{
+		ROS_INFO_STREAM("No wheel encoder data received");
+	}
 }
 
 void ampru_base::AmpruHardware::writeCommandsToHardware()
@@ -42,23 +56,19 @@ void ampru_base::AmpruHardware::writeCommandsToHardware()
     double diff_speed_right = angularToLinear(_cmd[1]);
     limitDifferentialSpeed(diff_speed_left, diff_speed_right);
 
-    ampru_msgs::WheelControl wheel_control_msg;
-    if (_range > 5.0)
-    {
-        wheel_control_msg.left_wheel_speed = (float)diff_speed_left;
-        wheel_control_msg.right_wheel_speed = (float)diff_speed_right;
-    }
-    else
-    {
-        wheel_control_msg.left_wheel_speed = 0.0;
-        wheel_control_msg.right_wheel_speed = 0.0;
-    }
-    _wheel_control_publisher.publish(wheel_control_msg);
+	ampru_base::SetMotorSpeed setMotorSpeed(diff_speed_left, diff_speed_right);
+	_serialPort.sendMessage(&setMotorSpeed);
 }
 
-void ampru_base::AmpruHardware::rangeDataCallback(const sensor_msgs::Range::ConstPtr& msg)
+bool ampru_base::AmpruHardware::openSerial()
 {
-    _range = (double)msg->range;
+	_serialPort.setPort("/dev/ttyUSB0");
+	_serialPort.openConnection();
+}
+
+void ampru_base::AmpruHardware::closeSerial()
+{
+	_serialPort.closeConnection();
 }
 
 void ampru_base::AmpruHardware::limitDifferentialSpeed(double &diff_speed_left, double &diff_speed_right)

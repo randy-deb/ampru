@@ -8,6 +8,7 @@ find_package(
   roslaunch
   roscpp
   roslint
+  serial
   controller_manager
   hardware_interface
   rosserial_arduino
@@ -32,6 +33,7 @@ catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
   roscpp
+  serial
   hardware_interface
   ampru_msgs
 )
@@ -50,6 +52,8 @@ add_executable(
   ampru_node
   src/ampru_base.cpp
   src/ampru_hardware.cpp
+  src/message.cpp
+  src/serial_port.cpp
 )
 
 target_link_libraries(
@@ -65,7 +69,11 @@ add_dependencies(
 roslint_cpp(
   src/ampru_base.cpp
   src/ampru_hardware.cpp
+  src/message.cpp
+  src/serial_port.cpp
   include/ampru_base/ampru_hardware.h
+  include/ampru_base/message.h
+  include/ampru_base/serial_port.h
 )
 
 roslaunch_add_file_check(launch)
