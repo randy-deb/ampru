@@ -101,16 +101,31 @@ void ampru_base::SerialPort::setMaxFrameLength(size_t length)
 
 bool ampru_base::SerialPort::openConnection()
 {
-	if (_serial.isOpen())
+	try
 	{
-		return true;
-	}
+		if (_serial.isOpen())
+		{
+			return true;
+		}
 
-	auto timeout = serial::Timeout::simpleTimeout(1000);
-	_serial.setPort(_serialPort);
-	_serial.setBaudrate(9600);
-	_serial.setTimeout(timeout);
-	_serial.open();
+		auto currentTime = std::chrono::system_clock::now();
+		std::chrono::duration<double> elapsedConnectTime = currentTime - _lastConnectTime;
+		if (elapsedConnectTime.count() < 5.0)
+		{
+			return false;
+		}
+		_lastConnectTime = currentTime;
+
+		auto timeout = serial::Timeout::simpleTimeout(1000);
+		_serial.setPort(_serialPort);
+		_serial.setBaudrate(9600);
+		_serial.setTimeout(timeout);
+		_serial.open();
+	}
+	catch (serial::IOException& e)
+	{
+		ROS_ERROR_STREAM("Failed to connect to serial port '" << _serial.getPort() << "'");
+	}
 
 	if (_serial.isOpen())
 	{
@@ -119,16 +134,22 @@ bool ampru_base::SerialPort::openConnection()
 	}
 	else
 	{
-		ROS_ERROR_STREAM("Failed to connect to serial port '" << _serial.getPort() << "'");
 		return false;
 	}
 }
 
 void ampru_base::SerialPort::closeConnection()
 {
-	if (_serial.isOpen())
+	try
 	{
-		_serial.close();
+		if (_serial.isOpen())
+		{
+			_serial.close();
+		}
+	}
+	catch (serial::IOException& e)
+	{
+		ROS_ERROR_STREAM("Failed to disconnect from serial port '" << _serial.getPort() << "'");
 	}
 }
 

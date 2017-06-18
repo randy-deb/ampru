@@ -12,7 +12,7 @@ void controlLoop(ampru_base::AmpruHardware &hw, controller_manager::ControllerMa
     ros::Duration elapsed(elapsed_time.count());
     last_time = current_time;
 
-    hw.updateJointsFromHardware();
+    hw.updateJointsFromHardware(elapsed);
     cm.update(ros::Time::now(), elapsed);
     hw.writeCommandsToHardware();
 }

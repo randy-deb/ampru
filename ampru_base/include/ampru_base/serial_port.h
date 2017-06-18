@@ -4,6 +4,7 @@
 
 #include <list>
 #include <string>
+#include <chrono>
 #include <serial/serial.h>
 #include "ampru_base/message.h"
 
@@ -41,6 +42,7 @@ namespace ampru_base
 	private:
 		std::string _serialPort;
 		serial::Serial _serial;
+		std::chrono::system_clock::time_point _lastConnectTime;
 		std::list<Message*> _messageQueue;
 		uint8_t* _txBuffer;
 		size_t _txBufferSize;

@@ -17,23 +17,25 @@ namespace ampru_base
         ~AmpruHardware();
 
         void registerControlInterface();
-        void updateJointsFromHardware();
+        void updateJointsFromHardware(const ros::Duration &period);
         void writeCommandsToHardware();
         
     private:
         bool openSerial();
         void closeSerial();
         void limitDifferentialSpeed(double &diff_speed_left, double &diff_speed_right);
+        double linearToAngular(const double &travel) const;
         double angularToLinear(const double &angle) const;
 
     private:
         ros::NodeHandle _nh;
         ros::NodeHandle _private_nh;
         serial::Serial _serial;
-	ampru_base::SerialPort _serialPort;
+	    ampru_base::SerialPort _serialPort;
         hardware_interface::JointStateInterface _joint_state_interface;
         hardware_interface::VelocityJointInterface _velocity_joint_interface;
         double _wheel_diameter;
+        int _wheel_encoder_pulses;
         double _max_speed;
         double _cmd[2];
         double _pos[2];

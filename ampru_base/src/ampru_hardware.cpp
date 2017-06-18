@@ -6,8 +6,9 @@ ampru_base::AmpruHardware::AmpruHardware(ros::NodeHandle &nh, ros::NodeHandle &p
     : _nh(nh)
     , _private_nh(private_nh)
 {
-    _private_nh.param<double>("wheel_diameter", _wheel_diameter, 0.35);
+    _private_nh.param<double>("wheel_diameter", _wheel_diameter, 0.0650);
     _private_nh.param<double>("max_speed", _max_speed, 1.0);
+    _private_nh.param<int>("wheel_encoder_pulses", _wheel_encoder_pulses, 20);
 
     openSerial();
     registerControlInterface();
@@ -34,7 +35,7 @@ void ampru_base::AmpruHardware::registerControlInterface()
     registerInterface(&_velocity_joint_interface);
 }
 
-void ampru_base::AmpruHardware::updateJointsFromHardware()
+void ampru_base::AmpruHardware::updateJointsFromHardware(const ros::Duration &period)
 {
 	ampru_base::GetWheelEncoder getWheelEncoder;
 	_serialPort.sendMessage(&getWheelEncoder);
@@ -42,11 +43,13 @@ void ampru_base::AmpruHardware::updateJointsFromHardware()
 	auto wheelEncoderData = (WheelEncoderData*)_serialPort.waitMessage(WheelEncoderData::MESSAGE_TYPE, 1.0);
 	if (wheelEncoderData != NULL)
 	{
-		ROS_INFO_STREAM("Wheel encoder: { " << wheelEncoderData->getLeftPulses() << ", " << wheelEncoderData->getRightPulses() << " }");
-	}
-	else
-	{
-		ROS_INFO_STREAM("No wheel encoder data received");
+        double distance_left = (wheelEncoderData->getLeftPulses() * ((_wheel_diameter * M_PI) / _wheel_encoder_pulses));
+        double distance_right = (wheelEncoderData->getRightPulses() * ((_wheel_diameter * M_PI) / _wheel_encoder_pulses));
+
+        _pos[0] += linearToAngular(distance_left);
+        _vel[0] += linearToAngular(distance_left / period.toSec());
+        _pos[1] += linearToAngular(distance_right);
+        _vel[1] += linearToAngular(distance_right / period.toSec());
 	}
 }
 
@@ -79,6 +82,11 @@ void ampru_base::AmpruHardware::limitDifferentialSpeed(double &diff_speed_left, 
         diff_speed_left *= _max_speed / speed;
         diff_speed_right *= _max_speed / speed;
     }
+}
+
+double ampru_base::AmpruHardware::linearToAngular(const double &travel) const
+{
+    return travel / _wheel_diameter * 2;
 }
 
 double ampru_base::AmpruHardware::angularToLinear(const double &angle) const
