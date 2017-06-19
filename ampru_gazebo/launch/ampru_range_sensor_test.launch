@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find ampru_gazebo)/launch/range_sensor_test.launch"/>
+    <include file="$(find ampru_gazebo)/launch/spawn_ampru.launch"/>
+</launch>
