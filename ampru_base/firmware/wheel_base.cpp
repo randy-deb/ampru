@@ -74,14 +74,12 @@ void setMotorControl(const uint8_t* frameBuffer, uint16_t frameLength)
 			digitalWrite(LWHEEL_FWD_PIN, HIGH);
 			digitalWrite(LWHEEL_BWD_PIN, LOW);
 			analogWrite(LWHEEL_PWR_PIN, lmotorPwr);
-			lwheel_pulses++;
 		}
 		else if (lmotorDir == 2)
 		{
 			digitalWrite(LWHEEL_FWD_PIN, LOW);
 			digitalWrite(LWHEEL_BWD_PIN, HIGH);
 			analogWrite(LWHEEL_PWR_PIN, lmotorPwr);
-			lwheel_pulses++;
 		}
 
 		if (rmotorDir == 0)
@@ -133,7 +131,7 @@ void setup()
 	pinMode(LWHEEL_PWR_PIN, OUTPUT);
 	pinMode(LWHEEL_FWD_PIN, OUTPUT);
 	pinMode(LWHEEL_BWD_PIN, OUTPUT);
-	//pinMode(RWHEEL_ENC_PIN, INPUT);
+	pinMode(RWHEEL_ENC_PIN, INPUT);
 	pinMode(RWHEEL_PWR_PIN, OUTPUT);
 	pinMode(RWHEEL_FWD_PIN, OUTPUT);
 	pinMode(RWHEEL_BWD_PIN, OUTPUT);
@@ -141,7 +139,7 @@ void setup()
 	
 	// Setup the wheel encoder interrupts
 	attachInterrupt(0, lwheelEncoderPulse, FALLING);
-	//attachInterrupt(1, rwheelEncoderPulse, FALLING);
+	attachInterrupt(1, rwheelEncoderPulse, FALLING);
 
 	Serial.begin(9600);
 	while (!Serial); // wait for Leonardo enumeration, others continue immediately

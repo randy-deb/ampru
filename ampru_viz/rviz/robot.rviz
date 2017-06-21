@@ -5,6 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /TF1
+        - /TF1/Frames1
         - /SonarScan1
       Splitter Ratio: 0.5
     Tree Height: 595
@@ -26,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: SonarScan
+    SyncSource: ""
   - Class: rviz/Displays
     Help Height: 78
     Name: Displays
@@ -34,7 +36,7 @@ Panels:
       Expanded:
         - /Global Options1
       Splitter Ratio: 0.5
-    Tree Height: 211
+    Tree Height: 359
 Visualization Manager:
   Class: ""
   Displays:
@@ -96,6 +98,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        hokuyo_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -103,19 +110,48 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_footprint:
+          Value: false
+        base_link:
+          Value: false
+        caster_back_link:
+          Value: false
+        caster_front_link:
+          Value: false
+        front_left_wheel:
+          Value: false
+        front_right_wheel:
+          Value: false
+        hokuyo_link:
+          Value: false
+        odom:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        odom:
+          base_link:
+            base_footprint:
+              {}
+            caster_back_link:
+              {}
+            caster_front_link:
+              {}
+            front_left_wheel:
+              {}
+            front_right_wheel:
+              {}
+            hokuyo_link:
+              {}
       Update Interval: 0
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -184,10 +220,10 @@ Visualization Manager:
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.320398003
+      Pitch: 0.385397941
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.79039359
+      Yaw: 4.19039488
     Saved: ~
 Window Geometry:
   Displays:

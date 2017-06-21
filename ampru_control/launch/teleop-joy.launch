@@ -12,6 +12,5 @@
         <param name="axis_deadman" value="10"/>
         <param name="axis_linear" value="1"/>
         <param name="axis_angular" value="0"/>
-        <remap from="cmd_vel" to="ampru_velocity_controller/cmd_vel"/>
     </node>
 </launch>
