@@ -2,7 +2,6 @@
 <launch>
     <node name="ampru_node" pkg="ampru_base" type="ampru_node" output="screen">
         <param name="max_speed" value="0.5"/>
-        <remap from="ampru_velocity_controller/odom" to="odom"/>
     </node>
     <include file="$(find ampru_control)/launch/control.launch"/>
 </launch>
