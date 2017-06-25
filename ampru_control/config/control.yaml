@@ -5,13 +5,13 @@ ampru_joint_publisher:
 ampru_velocity_controller:
     type                      : "diff_drive_controller/DiffDriveController"
     publish_rate              : 50
-    left_wheel                : 'front_left_wheel_joint'
-    right_wheel               : 'front_right_wheel_joint'
+    left_wheel                : 'left_wheel_joint'
+    right_wheel               : 'right_wheel_joint'
     pose_covariance_diagonal  : [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
     twist_covariance_diagonal : [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 1000.0]
     cmd_vel_timeout: 0.25
     base_frame_id: base_link
-    enable_odom_tf: true
+    enable_odom_tf: false
     estimate_velocity_from_position: false
     linear:
         x:

@@ -59,6 +59,7 @@ add_executable(
 target_link_libraries(
   ampru_node
   ${catkin_LIBRARIES}
+  usb
 )
 
 add_dependencies(

@@ -1,0 +1,5 @@
+# Arduino UNO
+SUBSYSTEM=="usb", ATTRS{idProduct}=="0043", ATTRS{idVendor}=="2341", SYMLINK+="arduino%n"
+
+# Arduino UNO chinese clone
+SUBSYSTEM=="usb", ATTRS{idProduct}=="7523", ATTRS{idVendor}=="1a86", SYMLINK+="arduino%n"

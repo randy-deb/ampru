@@ -102,8 +102,8 @@ namespace ampru_base
 		enum
 		{
 			L_PULSES = 0,
-			R_PULSES = 1,
-			PAYLOAD_LEN = 2,
+			R_PULSES = 2,
+			PAYLOAD_LEN = 4,
 		};
 
 	public:

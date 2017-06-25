@@ -198,11 +198,11 @@ ampru_base::WheelEncoderData::WheelEncoderData(const uint8_t* data, size_t lengt
 
 size_t ampru_base::WheelEncoderData::getLeftPulses() const
 {
-	return (size_t)getU8(L_PULSES);
+	return (size_t)getU16(L_PULSES);
 }
 
 size_t ampru_base::WheelEncoderData::getRightPulses() const
 {
-	return (size_t)getU8(R_PULSES);
+	return (size_t)getU16(R_PULSES);
 }
 
