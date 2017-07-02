@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node name="ampru_sonar_scanner" pkg="ampru_sonar_scanner" type="ampru_sonar_scanner" output="screen"/>
-</launch>
