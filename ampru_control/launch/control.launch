@@ -5,9 +5,11 @@
     <rosparam command="load" file="$(find ampru_control)/config/control.yaml"/>
 
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="ampru_joint_publisher ampru_velocity_controller --shutdown-timeout 3"/>
+    <!--
     <node name="ekf_localization" pkg="robot_localization" type="ekf_localization_node">
         <rosparam command="load" file="$(find ampru_control)/config/localization.yaml"/>
     </node>
+    -->
     <!--
     <node name="twist_marker_server" pkg="interactive_marker_twist_server" type="marker_server" output="screen"/>
     -->

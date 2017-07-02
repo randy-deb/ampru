@@ -76,6 +76,21 @@ namespace ampru_base
 
 	};
 
+	class GetMPUData
+		: public Message
+	{
+	public:
+		enum { MESSAGE_TYPE = 0x0003 };
+		enum
+		{
+			PAYLOAD_LEN = 0,
+		};
+
+	public:
+		GetMPUData();
+
+	};
+
 	class EchoMessage
 		: public Message
 	{
@@ -110,10 +125,40 @@ namespace ampru_base
 		WheelEncoderData(const uint8_t* data, size_t length);
 
 	public:
-		size_t getLeftPulses() const;
-		size_t getRightPulses() const;
+		int32_t getLeftPulses() const;
+		int32_t getRightPulses() const;
 
 	};
+
+	class MPUData
+		: public Message
+	{
+	public:
+		enum { MESSAGE_TYPE = 0x7003 };
+		enum
+		{
+			ACC_X = 0,
+			ACC_Y = 2,
+			ACC_Z = 4,
+			GYR_X = 6,
+			GYR_Y = 8,
+			GYR_Z = 10,
+			PAYLOAD_LEN = 12,
+		};
+
+	public:
+		MPUData(const uint8_t* data, size_t length);
+
+	public:
+		int32_t getAccelerationX();
+		int32_t getAccelerationY();
+		int32_t getAccelerationZ();
+		int32_t getGyroX();
+		int32_t getGyroY();
+		int32_t getGyroZ();
+
+	};
+
 }
 
 #endif // ___AMPRU_BASE_MESSAGE_H___

@@ -12,6 +12,7 @@ ampru_base::AmpruHardware::AmpruHardware(ros::NodeHandle &nh, ros::NodeHandle &p
     _private_nh.param<double>("max_speed", _max_speed, 1.0);
     _private_nh.param<int>("wheel_encoder_pulses", _wheel_encoder_pulses, 20);
 
+    /*
     ROS_INFO_STREAM("Enum USB devices");
     std::vector<serial::PortInfo> devices_found = serial::list_ports();
     std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
@@ -21,6 +22,9 @@ ampru_base::AmpruHardware::AmpruHardware(ros::NodeHandle &nh, ros::NodeHandle &p
         serial::PortInfo device = *iter++;
         ROS_INFO_STREAM(" - " << device.port << ", " << device.description << ", " << device.hardware_id << ": " << device.port.compare(0, port_prefix.size(), port_prefix));
     }
+    */
+
+    ROS_INFO_STREAM("Max speed: " << _max_speed);
 
     openSerial();
     registerControlInterface();
@@ -57,9 +61,6 @@ void ampru_base::AmpruHardware::updateJointsFromHardware(const ros::Duration &pe
 	{
         double distance_left = (wheelEncoderData->getLeftPulses() * ((_wheel_diameter * M_PI) / _wheel_encoder_pulses));
         double distance_right = (wheelEncoderData->getRightPulses() * ((_wheel_diameter * M_PI) / _wheel_encoder_pulses));
-
-        ROS_INFO_STREAM("Wheel encoders: " << wheelEncoderData->getLeftPulses() << " (" << distance_left << "), " << wheelEncoderData->getRightPulses() << " (" << distance_right << ")");
-
         _pos[0] += linearToAngular(distance_left);
         _vel[0] += linearToAngular(distance_left / period.toSec());
         _pos[1] += linearToAngular(distance_right);
@@ -69,6 +70,15 @@ void ampru_base::AmpruHardware::updateJointsFromHardware(const ros::Duration &pe
     {
         ROS_ERROR("No valid encoder data received");
     }
+
+    ampru_base::GetMPUData getMPUData;
+    _serialPort.sendMessage(&getMPUData);
+
+    auto mpuData = (MPUData*)_serialPort.waitMessage(MPUData::MESSAGE_TYPE, 1.0);
+    if (mpuData != NULL)
+    {
+        //ROS_INFO_STREAM("MPU: " << mpuData->getAccelerationX() << " / " << mpuData->getAccelerationY() << " / " << mpuData->getAccelerationY() << " / " << mpuData->getGyroX() << " / " << mpuData->getGyroY() << " / " << mpuData->getGyroY());
+    }
 }
 
 void ampru_base::AmpruHardware::writeCommandsToHardware()
@@ -76,7 +86,6 @@ void ampru_base::AmpruHardware::writeCommandsToHardware()
     double diff_speed_left = angularToLinear(_cmd[0]);
     double diff_speed_right = angularToLinear(_cmd[1]);
     limitDifferentialSpeed(diff_speed_left, diff_speed_right);
-
 	ampru_base::SetMotorSpeed setMotorSpeed(diff_speed_left, diff_speed_right);
 	_serialPort.sendMessage(&setMotorSpeed);
 }
@@ -104,10 +113,10 @@ void ampru_base::AmpruHardware::limitDifferentialSpeed(double &diff_speed_left, 
 
 double ampru_base::AmpruHardware::linearToAngular(const double &travel) const
 {
-    return travel / _wheel_diameter * 2;
+    return travel / _wheel_diameter;
 }
 
 double ampru_base::AmpruHardware::angularToLinear(const double &angle) const
 {
-    return angle * _wheel_diameter / 2;
+    return angle * _wheel_diameter;
 }

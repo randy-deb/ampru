@@ -13,6 +13,8 @@ ampru_base::Message* ampru_base::Message::parse(const uint8_t* data, size_t leng
 		return new EchoMessage(data, length);
 	case WheelEncoderData::MESSAGE_TYPE:
 		return new WheelEncoderData(data, length);
+	case MPUData::MESSAGE_TYPE:
+		return new MPUData(data, length);
 	default:
 		return NULL;
 	}
@@ -175,6 +177,11 @@ ampru_base::GetWheelEncoder::GetWheelEncoder()
 {
 }
 
+ampru_base::GetMPUData::GetMPUData()
+	: Message(MESSAGE_TYPE, PAYLOAD_LEN)
+{
+}
+
 ampru_base::EchoMessage::EchoMessage(uint32_t value)
 	: Message(MESSAGE_TYPE, PAYLOAD_LEN)
 {
@@ -196,13 +203,48 @@ ampru_base::WheelEncoderData::WheelEncoderData(const uint8_t* data, size_t lengt
 {
 }
 
-size_t ampru_base::WheelEncoderData::getLeftPulses() const
+int32_t ampru_base::WheelEncoderData::getLeftPulses() const
 {
-	return (size_t)getU16(L_PULSES);
+	return (int32_t)getI16(L_PULSES);
 }
 
-size_t ampru_base::WheelEncoderData::getRightPulses() const
+int32_t ampru_base::WheelEncoderData::getRightPulses() const
 {
-	return (size_t)getU16(R_PULSES);
+	return (int32_t)getI16(R_PULSES);
 }
 
+ampru_base::MPUData::MPUData(const uint8_t* data, size_t length)
+	: Message(data, length)
+{
+
+}
+
+int32_t ampru_base::MPUData::getAccelerationX()
+{
+	return (int32_t)getI16(ACC_X);
+}
+
+int32_t ampru_base::MPUData::getAccelerationY()
+{
+	return (int32_t)getI16(ACC_Y);
+}
+
+int32_t ampru_base::MPUData::getAccelerationZ()
+{
+	return (int32_t)getI16(ACC_Z);
+}
+
+int32_t ampru_base::MPUData::getGyroX()
+{
+	return (int32_t)getI16(GYR_X);
+}
+
+int32_t ampru_base::MPUData::getGyroY()
+{
+	return (int32_t)getI16(GYR_Y);
+}
+
+int32_t ampru_base::MPUData::getGyroZ()
+{
+	return (int32_t)getI16(GYR_Z);
+}
