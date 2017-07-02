@@ -4,4 +4,5 @@
         <param name="max_speed" value="0.5"/>
     </node>
     <include file="$(find ampru_control)/launch/control.launch"/>
+    <include file="$(find ampru_control)/launch/teleop-joy.launch"/>
 </launch>
