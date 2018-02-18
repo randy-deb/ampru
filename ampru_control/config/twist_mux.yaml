@@ -5,6 +5,11 @@ topics:
   timeout : 0.5
   priority: 10
 -
+  name    : remote
+  topic   : virtual_joystick/cmd_vel
+  timeout : 0.5
+  priority: 10
+-
   name    : external
   topic   : cmd_vel
   timeout : 0.5
